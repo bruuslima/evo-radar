@@ -1,15 +1,15 @@
 import streamlit as st
 import socket
-import requests
+import whois
 
-# 1. Configuração da Página e Identidade da Empresa
+# Configuração da Página e Identidade da Empresa
 st.set_page_config(
     page_title="EVO Radar Concorrente - Vivo Empresas",
     page_icon="🎯",
     layout="centered"
 )
 
-# Estilização básica para dar um visual profissional
+# Estilização básica
 st.markdown("""
     <style>
     .main-title { font-size: 32px; font-weight: bold; color: #4B0082; text-align: center; margin-bottom: 5px; }
@@ -19,68 +19,57 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Topo da página
 st.markdown("<div class='main-title'>EVO PARCEIRO VIVO EMPRESAS</div>", unsafe_allow_html=True)
 st.markdown("<div class='subtitle'>📡 Inteligência de Mercado: Descubra o Link Dedicado do Cliente</div>", unsafe_allow_html=True)
 
-# 2. Entrada de Dados do Vendedor
 st.subheader("🔎 Investigação Silenciosa")
 dominio_input = st.text_input("Digite o site/domínio do cliente (ex: empresa.com.br):", placeholder="empresa.com.br")
 
-# 3. Processamento ao Clicar no Botão
 if st.button("Mapear Concorrente 🎯"):
     if dominio_input:
         dominio_limpo = dominio_input.replace("https://", "").replace("http://", "").replace("www.", "").strip("/")
         
-        with st.spinner("Rastreando infraestrutura na rede..."):
+        with st.spinner("Rastreando servidores e operadoras..."):
             try:
-                # Resolução de DNS (Descobre o IP do site)
+                # 1. Descobre o IP real do servidor do cliente
                 ip_alvo = socket.gethostbyname(dominio_limpo)
                 
-                # LINK DA API CORRIGIDO (Evita o erro de junção de texto)
-                url_api = f"http://ip-api.com{ip_alvo}?fields=status,message,isp,org,as,hosting"
-                resposta = requests.get(url_api).json()
+                # 2. Descobre quem é o dono do domínio e os servidores de DNS (onde o link responde)
+                info_dominio = whois.whois(dominio_limpo)
+                servidores_dns = info_dominio.name_servers
                 
-                if resposta.get("status") == "success":
-                    operadora = resposta.get("isp")
-                    organizacao = resposta.get("org")
-                    bloco_asn = resposta.get("as")
-                    eh_hosting = resposta.get("hosting")
-                    
-                    st.success("✅ Varredura Concluída com Sucesso!")
-                    
-                    # Exibição dos Dados em Cards Visuais
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.metric(label="Provedor Atual (ISP)", value=operadora)
-                        st.caption(f"Bloco de Rede: {bloco_asn}")
-                    with col2:
-                        st.metric(label="Endereço de IP Encontrado", value=ip_alvo)
-                        st.caption(f"Registrado para: {organizacao}")
-                    
-                    # 4. Direcionamento Comercial (Inteligência EVO)
-                    st.markdown("---")
-                    st.subheader("🎯 Estratégia de Abordagem para o Vendedor:")
-                    
-                    if eh_hosting:
-                        st.warning("⚠️ **Alerta de Nuvem (Hosting):** O site deles roda em servidores compartilhados ou Data Center (ex: AWS, Hostgator, Locaweb).")
-                        st.write("👉 *Como abordar:* O link físico da empresa pode ser diferente. Use a abordagem para descobrir: *'Identificamos que a estrutura web de vocês já está modernizada em nuvem, mas como está o link dedicado local que garante o acesso estável a essa nuvem sem quedas?'*")
-                    else:
-                        st.info(f"🔥 **Concorrente Direto Exposto:** O cliente aponta o tráfego diretamente para a rede da **{operadora}**.")
-                        st.write(f"👉 *Como abordar:* Use o argumento de ganho de estabilidade na Fibra Dedicada Vivo contra a rota atual deles. Foque em **SLA de 99,5%**, **Garantia de Banda** e suporte corporativo exclusivo da EVO.")
-                        
-                        # Script rápido de Gancho
-                        st.code(
-                            f"Script Sugerido:\n"
-                            f"\"Olá! Sou da EVO, parceiro estratégico Vivo Empresas. Estamos implementando um anel de fibra de ultra velocidade na sua região para empresas que precisam substituir conexões instáveis de operadoras como a {operadora} por um circuito 100% simétrico e dedicado...\"", 
-                            language="text"
-                        )
+                # Transforma a lista de DNS em texto simples para exibição
+                dns_texto = ", ".join(servidores_dns) if isinstance(servidores_dns, list) else str(servidores_dns)
+                
+                st.success("✅ Varredura Concluída com Sucesso!")
+                
+                # Exibição dos dados na tela
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric(label="Servidores de DNS do Cliente", value="Ver Detalhes Abaixo")
+                    st.write(f"🌐 **DNS:** {dns_texto}")
+                with col2:
+                    st.metric(label="IP do Servidor Web", value=ip_alvo)
+                
+                st.markdown("---")
+                st.subheader("🎯 Estratégia de Abordagem EVO:")
+                
+                # Lógica comercial baseada no DNS detectado
+                dns_lower = dns_texto.lower()
+                
+                if "locaweb" in dns_lower or "hostgator" in dns_lower or "uolhost" in dns_lower:
+                    st.warning("⚠️ **Alerta de Hospedagem Comercial:** O site roda em um provedor de hospedagem em nuvem.")
+                    st.write("👉 *Como o vendedor aborda:* 'Notamos que sua estrutura de site/e-mail roda em nuvem de alta performance. Para garantir que seus funcionários não percam o acesso a essas ferramentas por quedas na internet local, a Vivo tem um plano de link dedicado com contingência automática...'")
+                elif "cloudflare" in dns_lower:
+                    st.info("🛡️ **Proteção Cloudflare Detectada:** A empresa possui uma estrutura profissional de segurança web.")
+                    st.write("👉 *Como o vendedor aborda:* 'Empresas que investem em segurança digital como vocês precisam de estabilidade máxima na ponta. Nosso link dedicado entrega simetria total de download e upload...'")
                 else:
-                    st.error("Não foi possível extrair os dados de provedor para este domínio.")
-                    
+                    st.success("🔥 **Alvo com Estrutura Própria Local Provável:**")
+                    st.write("👉 *Como o vendedor aborda:* Faça as perguntas de qualificação para pescar o concorrente: *'Identificamos que sua empresa possui servidores ativos de rede. Como está o SLA de entrega e o suporte da sua operadora atual de link dedicado hoje?'*")
+                
             except socket.gaierror:
                 st.error("❌ Domínio Inválido ou Inexistente. Verifique se digitou o site corretamente.")
             except Exception as e:
-                st.error(f"❌ Ocorreu um erro na requisição: {e}")
+                st.error(f"❌ Ocorreu um erro no processamento: {e}")
     else:
         st.warning("Por favor, digite um domínio antes de buscar.")
