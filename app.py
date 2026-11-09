@@ -33,7 +33,7 @@ if st.button("Mapear Concorrente 🎯"):
                 # 1. Descobre o IP principal do site
                 ip_alvo = socket.gethostbyname(dominio_limpo)
                 
-                # 2. Tenta descobrir o nome reverso do IP (Muitas vezes revela a operadora dona do bloco!)
+                # 2. Descobre o nome reverso do IP
                 try:
                     nome_reverso, _, _ = socket.gethostbyaddr(ip_alvo)
                 except:
@@ -46,27 +46,49 @@ if st.button("Mapear Concorrente 🎯"):
                 with col1:
                     st.metric(label="Endereço de IP do Servidor", value=ip_alvo)
                 with col2:
-                    st.metric(label="Identificação de Rota (Host)", value="Ver abaixo")
+                    st.metric(label="Identificação de Rota", value="Análise Concluída")
                 
                 st.info(f"🌐 **Nome do Host/Rota Detectada:** {nome_reverso}")
                 
                 st.markdown("---")
                 st.subheader("🎯 Estratégia de Abordagem EVO:")
                 
-                # Análise lógica simples baseada nos nomes de servidores comuns
                 host_lower = nome_reverso.lower()
                 
-                if "claro" in host_lower or "embratel" in host_lower:
-                    st.error("🔥 Concorrente Detectado: Estrutura vinculada ao grupo CLARO / EMBRATEL.")
+                # LISTA DE DETECÇÃO DE NUVEM INTERNACIOMAL/PLATAFORMAS
+                plataformas_nuvem = ["multiscreensite", "amazonaws", "cloudflare", "google", "linode", "digitalocean", "github", "shopify", "wix"]
+                
+                is_nuvem = any(p in host_lower for p in plataformas_nuvem)
+                
+                if is_nuvem:
+                    st.warning("⚠️ **ALERTA: ESTE SITE ESTÁ NA NUVEM!**")
+                    st.markdown("""
+                    **O que isso significa?** O site do cliente fica hospedado fora da empresa. Por isso, não dá para ver a operadora física (como Telium, Claro, etc.) olhando apenas o site. 
+                    
+                    **Sua missão como vendedor:** Use o script abaixo para fazer o cliente 'confessar' qual operadora ele usa no escritório!
+                    """)
+                    
+                    st.code(
+                        "Script de Pescaria Comercial (Foco em Nuvem):\n\n"
+                        "\"Olá! Sou da EVO, parceiro estratégico Vivo Empresas. Identificamos que a estrutura digital de vocês "
+                        "já roda em servidores de nuvem de alta performance. Entramos em contato porque empresas com esse perfil "
+                        "dependem 100% de estabilidade na internet física do escritório para não perder o acesso aos sistemas.\n\n"
+                        "Hoje na região estamos substituindo conexões de operadoras como Telium, Claro e Embratel por circuitos "
+                        "de Fibra Dedicada da Vivo com SLA de 99,5%. Quem fornece o link dedicado de vocês no escritório hoje para "
+                        "garantir esse acesso?\"", 
+                        language="text"
+                    )
+                elif "claro" in host_lower or "embratel" in host_lower:
+                    st.error("🔥 **Concorrente Detectado:** Estrutura vinculada ao grupo **CLARO / EMBRATEL**.")
                     st.write("👉 *Abordagem:* Ataque a instabilidade em dias de chuva e negocie oferecendo a Fibra Óptica Dedicada com rotas exclusivas da Vivo.")
                 elif "telemar" in host_lower or "oi." in host_lower:
-                    st.error("🔥 Concorrente Detectado: Estrutura vinculada à OI.")
+                    st.error("🔥 **Concorrente Detectado:** Estrutura vinculada à **OI**.")
                     st.write("👉 *Abordagem:* Foque na segurança jurídica e na saúde financeira da Vivo como parceira estável para os próximos anos da empresa.")
-                elif "hosting" in host_lower or "locaweb" in host_lower or "hostgator" in host_lower or "secureserver" in host_lower:
-                    st.warning("⚠️ Estrutura Web em Data Center Comercial (Nuvem).")
-                    st.write("👉 *Abordagem:* 'Identificamos que seus sistemas rodam em servidores web profissionais. Para garantir que sua equipe interna acesse essas ferramentas sem lentidão ou quedas, a Vivo oferece soluções de IP Fixo e Link Dedicado simétrico...'")
+                elif "locaweb" in host_lower or "hostgator" in host_lower or "uolhost" in host_lower:
+                    st.warning("⚠️ **Estrutura Web em Data Center Comercial Nacional (Locaweb/Hostgator).**")
+                    st.write("👉 *Abordagem:* 'Identificamos que seus sistemas de e-mail rodam em servidores profissionais externos. Para garantir que sua equipe interna acesse essas ferramentas sem lentidão ou quedas, a Vivo oferece soluções de Link Dedicado simétrico...'")
                 else:
-                    st.success("🎯 Alvo Comercial Mapeado:")
+                    st.success("🎯 **Alvo Comercial Mapeado (Estrutura Própria Local Provável):**")
                     st.write("👉 *Abordagem:* Use o script de sondagem inteligente: *'Estamos mapeando a infraestrutura digital do seu bairro e identificamos que sua empresa possui servidores ativos na rede. Como está o suporte e a garantia de banda contratada do seu provedor de internet atual?'*")
                 
             except socket.gaierror:
