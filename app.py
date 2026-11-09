@@ -1,6 +1,5 @@
 import streamlit as st
 import socket
-import whois
 
 # Configuração da Página e Identidade da Empresa
 st.set_page_config(
@@ -9,7 +8,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# Estilização básica
+# Estilização básica EVO
 st.markdown("""
     <style>
     .main-title { font-size: 32px; font-weight: bold; color: #4B0082; text-align: center; margin-bottom: 5px; }
@@ -29,43 +28,46 @@ if st.button("Mapear Concorrente 🎯"):
     if dominio_input:
         dominio_limpo = dominio_input.replace("https://", "").replace("http://", "").replace("www.", "").strip("/")
         
-        with st.spinner("Rastreando servidores e operadoras..."):
+        with st.spinner("Rastreando infraestrutura de rede..."):
             try:
-                # 1. Descobre o IP real do servidor do cliente
+                # 1. Descobre o IP principal do site
                 ip_alvo = socket.gethostbyname(dominio_limpo)
                 
-                # 2. Descobre quem é o dono do domínio e os servidores de DNS (onde o link responde)
-                info_dominio = whois.whois(dominio_limpo)
-                servidores_dns = info_dominio.name_servers
-                
-                # Transforma a lista de DNS em texto simples para exibição
-                dns_texto = ", ".join(servidores_dns) if isinstance(servidores_dns, list) else str(servidores_dns)
+                # 2. Tenta descobrir o nome reverso do IP (Muitas vezes revela a operadora dona do bloco!)
+                try:
+                    nome_reverso, _, _ = socket.gethostbyaddr(ip_alvo)
+                except:
+                    nome_reverso = "Não disponível publicamente"
                 
                 st.success("✅ Varredura Concluída com Sucesso!")
                 
                 # Exibição dos dados na tela
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.metric(label="Servidores de DNS do Cliente", value="Ver Detalhes Abaixo")
-                    st.write(f"🌐 **DNS:** {dns_texto}")
+                    st.metric(label="Endereço de IP do Servidor", value=ip_alvo)
                 with col2:
-                    st.metric(label="IP do Servidor Web", value=ip_alvo)
+                    st.metric(label="Identificação de Rota (Host)", value="Ver abaixo")
+                
+                st.info(f"🌐 **Nome do Host/Rota Detectada:** {nome_reverso}")
                 
                 st.markdown("---")
                 st.subheader("🎯 Estratégia de Abordagem EVO:")
                 
-                # Lógica comercial baseada no DNS detectado
-                dns_lower = dns_texto.lower()
+                # Análise lógica simples baseada nos nomes de servidores comuns
+                host_lower = nome_reverso.lower()
                 
-                if "locaweb" in dns_lower or "hostgator" in dns_lower or "uolhost" in dns_lower:
-                    st.warning("⚠️ **Alerta de Hospedagem Comercial:** O site roda em um provedor de hospedagem em nuvem.")
-                    st.write("👉 *Como o vendedor aborda:* 'Notamos que sua estrutura de site/e-mail roda em nuvem de alta performance. Para garantir que seus funcionários não percam o acesso a essas ferramentas por quedas na internet local, a Vivo tem um plano de link dedicado com contingência automática...'")
-                elif "cloudflare" in dns_lower:
-                    st.info("🛡️ **Proteção Cloudflare Detectada:** A empresa possui uma estrutura profissional de segurança web.")
-                    st.write("👉 *Como o vendedor aborda:* 'Empresas que investem em segurança digital como vocês precisam de estabilidade máxima na ponta. Nosso link dedicado entrega simetria total de download e upload...'")
+                if "claro" in host_lower or "embratel" in host_lower:
+                    st.error("🔥 Concorrente Detectado: Estrutura vinculada ao grupo CLARO / EMBRATEL.")
+                    st.write("👉 *Abordagem:* Ataque a instabilidade em dias de chuva e negocie oferecendo a Fibra Óptica Dedicada com rotas exclusivas da Vivo.")
+                elif "telemar" in host_lower or "oi." in host_lower:
+                    st.error("🔥 Concorrente Detectado: Estrutura vinculada à OI.")
+                    st.write("👉 *Abordagem:* Foque na segurança jurídica e na saúde financeira da Vivo como parceira estável para os próximos anos da empresa.")
+                elif "hosting" in host_lower or "locaweb" in host_lower or "hostgator" in host_lower or "secureserver" in host_lower:
+                    st.warning("⚠️ Estrutura Web em Data Center Comercial (Nuvem).")
+                    st.write("👉 *Abordagem:* 'Identificamos que seus sistemas rodam em servidores web profissionais. Para garantir que sua equipe interna acesse essas ferramentas sem lentidão ou quedas, a Vivo oferece soluções de IP Fixo e Link Dedicado simétrico...'")
                 else:
-                    st.success("🔥 **Alvo com Estrutura Própria Local Provável:**")
-                    st.write("👉 *Como o vendedor aborda:* Faça as perguntas de qualificação para pescar o concorrente: *'Identificamos que sua empresa possui servidores ativos de rede. Como está o SLA de entrega e o suporte da sua operadora atual de link dedicado hoje?'*")
+                    st.success("🎯 Alvo Comercial Mapeado:")
+                    st.write("👉 *Abordagem:* Use o script de sondagem inteligente: *'Estamos mapeando a infraestrutura digital do seu bairro e identificamos que sua empresa possui servidores ativos na rede. Como está o suporte e a garantia de banda contratada do seu provedor de internet atual?'*")
                 
             except socket.gaierror:
                 st.error("❌ Domínio Inválido ou Inexistente. Verifique se digitou o site corretamente.")
