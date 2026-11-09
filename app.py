@@ -34,10 +34,10 @@ if st.button("Mapear Concorrente 🎯"):
         
         with st.spinner("Rastreando infraestrutura na rede..."):
             try:
-                # Resolução de DNS
+                # Resolução de DNS (Descobre o IP do site)
                 ip_alvo = socket.gethostbyname(dominio_limpo)
                 
-                # Consulta de ASN e Provedor
+                # LINK DA API CORRIGIDO (Evita o erro de junção de texto)
                 url_api = f"http://ip-api.com{ip_alvo}?fields=status,message,isp,org,as,hosting"
                 resposta = requests.get(url_api).json()
                 
@@ -63,11 +63,11 @@ if st.button("Mapear Concorrente 🎯"):
                     st.subheader("🎯 Estratégia de Abordagem para o Vendedor:")
                     
                     if eh_hosting:
-                        st.warning("⚠️ **Alerta de Nuvem (Hosting):** O site deles roda em servidores compartilhados ou Data Center (ex: AWS, Hostgator).")
+                        st.warning("⚠️ **Alerta de Nuvem (Hosting):** O site deles roda em servidores compartilhados ou Data Center (ex: AWS, Hostgator, Locaweb).")
                         st.write("👉 *Como abordar:* O link físico da empresa pode ser diferente. Use a abordagem para descobrir: *'Identificamos que a estrutura web de vocês já está modernizada em nuvem, mas como está o link dedicado local que garante o acesso estável a essa nuvem sem quedas?'*")
                     else:
                         st.info(f"🔥 **Concorrente Direto Exposto:** O cliente aponta o tráfego diretamente para a rede da **{operadora}**.")
-                        st.write(f"👉 *Como abordar:* Use o argumento de ganho de estabilidade na Fibra Dedicada Vivo contra a rota atual deles. Foque em **SLA de 99,5%**, **Garantia de Banda** e suporte corporativo exclusivo.")
+                        st.write(f"👉 *Como abordar:* Use o argumento de ganho de estabilidade na Fibra Dedicada Vivo contra a rota atual deles. Foque em **SLA de 99,5%**, **Garantia de Banda** e suporte corporativo exclusivo da EVO.")
                         
                         # Script rápido de Gancho
                         st.code(
